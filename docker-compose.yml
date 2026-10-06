@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:15
+    container_name: currency-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: metrics_db
+    ports:
+      - "5432:5432" # Пробрасываем порт на твой Макбук
+    volumes:
+      - currency_pgdata:/var/lib/postgresql/data
+
+volumes:
+  currency_pgdata:
