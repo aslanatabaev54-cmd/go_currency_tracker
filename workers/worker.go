@@ -19,7 +19,7 @@ func Work(ctx context.Context, ch chan<- CurrencyData) {
 		if err != nil {
 			log.Printf("Не удалось дозвониться: %v", err)
 		}
-		targetCurrencies := []string{"EUR", "USD", "RUB"}
+		targetCurrencies := []string{"EUR", "AED", "RUB"}
 		for _, code := range targetCurrencies {
 			rate, exists := worker.Rates[code]
 			if exists {

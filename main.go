@@ -5,6 +5,7 @@ import (
 	"go-currency-tracker/storage"
 	"go-currency-tracker/workers"
 	"log"
+	"net/http"
 	"time"
 )
 
@@ -22,18 +23,17 @@ func main() {
 	// Надеваем на него универсальную маску интерфейса DataSaver
 	var saver storage.DataSaver = postgresObj
 	go workers.Work(ctx, chanel)
-	for {
-		select {
-		case <-ctx.Done():
-			log.Println("[Main] Время вышло! Директор закрывает офис. Программа завершена.")
-			return
-		case data := <-chanel:
-			log.Printf("[Main] Поймали из канала: %s = %.2f. Сохраняем в файл...", data.Code, data.Rate)
-			err := saver.SaveCurrency(data.Code, data.Rate)
+	go func() {
+		for Data := range chanel {
+			log.Printf("[Main] Поймали из канала: %s = %.2f. Сохраняем в Postgres...", Data.Code, Data.Rate)
+			err := saver.SaveCurrency(Data.Code, Data.Rate)
 			if err != nil {
 				log.Printf("[Main Ошибка] Не удалось записать: %v", err)
 			}
 		}
-	}
+	}()
 
+	http.HandleFunc("/rates", postgresObj.GetRatesHandler)
+	log.Println("REST API Сервер успешно запущен на http://localhost:8080/rates")
+	http.ListenAndServe(":8080", nil)
 }
